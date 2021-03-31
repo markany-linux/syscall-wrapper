@@ -42,7 +42,7 @@ struct syscall_addr g_orig_syscalls = {0};
 static void set_syscall_addr(unsigned long *addr, unsigned long **backup,
                              const struct syscall_table *table, int syscall) {
   if (table && addr) {
-    if (backup && *backup) *backup = table->addr[syscall];
+    if (backup) *backup = table->addr[syscall];
     table->addr[syscall] = addr;
   }
 }
@@ -129,7 +129,7 @@ bool toggle_wrap_syscalls(bool wrap) {
 
   disable_page_protection();
   for (i = 0; i < MAX_WRAP_TARGETS; ++i) {
-    if (!targets[i].offset) break;
+    if (!targets[i].handler) break;
 
     addr = ((void *)&g_orig_syscalls) + targets[i].offset;
     if (wrap) {
@@ -145,7 +145,7 @@ bool toggle_wrap_syscalls(bool wrap) {
   enable_page_protection();
 
   if (wrap) {
-    printk(KERN_INFO "Success to wrap syscalls.\n");
+    printk(KERN_INFO "Success to wrap syscalls. (%d syscalls)\n", i);
   } else {
     printk(KERN_INFO "Success to unwrap syscalls.\n");
   }

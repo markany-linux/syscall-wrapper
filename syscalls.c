@@ -16,7 +16,7 @@ static void print_target_proc_action(const char *filename) {
 
   if (!IS_ERR(proc_path) && !strcmp(kTargetProc, proc_path)) {
     printk(KERN_INFO "Target proccess file access: %s\n", proc_path);
-    if (!strncpy_from_user(buf, filename, sizeof(buf))) {
+    if (0 < strncpy_from_user(buf, filename, sizeof(buf))) {
       printk(KERN_INFO "filename: %s\n", buf);
     }
   }
