@@ -25,6 +25,8 @@ char *get_proc_path(struct task_struct *task, char *buf, int buflen) {
   }
 #if LINUX_VERSION_CODE < KERNEL_VERSION(5, 8, 0)
   up_read(&mm->mmap_sem);
+#else
+  up_read(&mm->mmap_lock);
 #endif
   mmput(mm);
 
