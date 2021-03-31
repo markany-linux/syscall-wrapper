@@ -13,8 +13,11 @@
 #define REQUIRE_KPROBE (1)
 #include <linux/kprobes.h>
 static struct kprobe kp = {.symbol_name = "kallsyms_lookup_name"};
-#else
+#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
+#define KALLSYMS (1)
 #include <linux/kallsyms.h>
+#else
+#include <linux/syscalls.h>
 #endif
 
 struct wrap_data {
@@ -78,6 +81,8 @@ static void enable_page_protection(void) {
 }
 
 static bool get_syscall_table_addr(struct syscall_table *table) {
+#ifdef KALLSYMS
+
 #ifdef REQUIRE_KPROBE
   typedef unsigned long (*kallsyms_lookup_name_t)(const char *name);
   kallsyms_lookup_name_t kallsyms_lookup_name;
@@ -89,9 +94,22 @@ static bool get_syscall_table_addr(struct syscall_table *table) {
 
   kallsyms_lookup_name = (kallsyms_lookup_name_t)kp.addr;
   unregister_kprobe(&kp);
-#endif
+#endif  // #ifdef REQUIRE_KPROBE
 
   table->addr = (unsigned long **)kallsyms_lookup_name("sys_call_table");
+#else   // #ifdef KALLSYMS
+  long i = 0;
+  unsigned long **tmp;
+
+  for (i = (unsigned long)sys_close; i < ULONG_MAX; i += sizeof(void *)) {
+    tmp = (unsigned long **)i;
+    if (tmp[__NR_close] == (unsigned long *)sys_close) {
+      table->addr = tmp;
+      break;
+    }
+  }
+#endif  // #ifdef KALLSYMS
+
   if (!table->addr) {
     printk(KERN_ERR "Failed to get syscall table address.\n");
     return false;
@@ -125,5 +143,12 @@ bool toggle_wrap_syscalls(bool wrap) {
     if (!wrap) *addr = NULL;
   }
   enable_page_protection();
+
+  if (wrap) {
+    printk(KERN_INFO "Success to wrap syscalls.\n");
+  } else {
+    printk(KERN_INFO "Success to unwrap syscalls.\n");
+  }
+
   return true;
 }

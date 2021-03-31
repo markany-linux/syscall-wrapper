@@ -1,7 +1,8 @@
 obj-m :=		syscall-wrapper.o
 syscall-wrapper-objs :=	module.o	\
-			wrapper.o	\
-			syscalls.o
+			syscalls.o	\
+			utils.o		\
+			wrapper.o
 
 KBUILD =		/lib/modules/$(shell uname -r)/build
 PWD =			$(shell pwd)
