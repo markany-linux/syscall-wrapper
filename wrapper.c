@@ -9,13 +9,14 @@
 
 #define WRAP_OFFSET(m) (offsetof(struct syscall_addr, m))
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
-#define REQUIRE_KPROBE (1)
-#include <linux/kprobes.h>
-static struct kprobe kp = {.symbol_name = "kallsyms_lookup_name"};
-#elif LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
-#define KALLSYMS (1)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0)
 #include <linux/kallsyms.h>
+#define KALLSYMS (1)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5, 7, 0)
+#include <linux/kprobes.h>
+#define REQUIRE_KPROBE (1)
+static struct kprobe kp = {.symbol_name = "kallsyms_lookup_name"};
+#endif
 #else
 #include <linux/syscalls.h>
 #endif
@@ -88,7 +89,7 @@ static bool get_syscall_table_addr(struct syscall_table *table) {
   kallsyms_lookup_name_t kallsyms_lookup_name;
 
   if (0 > register_kprobe(&kp)) {
-    printf(KERN_ERR "Failed to register_kprobe() for kallsyms_lookup_name\n");
+    printk(KERN_ERR "Failed to register_kprobe() for kallsyms_lookup_name\n");
     return false;
   }
 
