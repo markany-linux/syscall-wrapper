@@ -8,7 +8,7 @@ KBUILD =		/lib/modules/$(shell uname -r)/build
 PWD =			$(shell pwd)
 
 all:
-	make -C $(KBUILD) M=$(PWD) modules
+	$(MAKE) -C $(KBUILD) M=$(PWD) modules
 
 clean:
-	make -C $(KBUILD) M=$(PWD) clean
+	$(MAKE) -C $(KBUILD) M=$(PWD) clean

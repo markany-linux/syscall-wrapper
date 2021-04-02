@@ -7,5 +7,6 @@ compile_commands.json
 *.o
 *.d
 *.ko
+*.mod
 *.mod.c
 *.order
